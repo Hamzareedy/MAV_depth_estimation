@@ -3,7 +3,9 @@ import time
 import logging
 import argparse
 import h5py
+import random
 from PIL import Image
+from matplotlib import pyplot as plt
 import config
 
 
@@ -65,6 +67,34 @@ def rename_files(path):
     for i, file in enumerate(files):
         os.rename(os.path.join(path, file), os.path.join(output_path, f"image_{i:05d}.jpg"))
         print(f"Rename {file} to image_{i:05d}.jpg")
-        
+     
+     
+
 def load_comparison():
-    pass
+    '''
+        Randomly load a pair of image and depth map for comparison
+    '''
+    img_data_folder = config.config["image_path"]
+    depth_data_folder = config.config["depth_path"]
+    
+    idx = random.randint(0, len(os.listdir(img_data_folder)))
+    img = Image.open(os.path.join(img_data_folder, f"image_{idx:05d}.jpg"))
+    depth = Image.open(os.path.join(depth_data_folder, f"image_{idx:05d}.jpg"))
+    
+    # Rotate the image and depth map inversely by 90 degrees
+    img_rotated = img.rotate(90, expand=True)
+    depth_rotated = depth.rotate(90, expand=True)
+    
+    plt.figure(figsize=(10, 5))
+    plt.subplot(1, 2, 1)
+    plt.imshow(img_rotated)
+    plt.title(f"original image {idx} (rotated)")
+    plt.axis("off")
+    
+    plt.subplot(1, 2, 2)
+    plt.imshow(depth_rotated, cmap="gray")
+    plt.title(f"depth map {idx} (rotated)")
+    plt.axis("off")
+    plt.show()
+    
+    

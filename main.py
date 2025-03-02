@@ -60,8 +60,7 @@ if __name__ == "__main__":
     elif args.mode == "eval":
         pass
     else:
-        # utils.convert_h5_to_image('data/depth_maps_cyberzoo_aggressive_flight_20190121-144646.h5')
-        utils.rename_files("data/20190121-144646")
+        utils.load_comparison()
         # raise ValueError("Invalid mode. Please choose 'train' or 'eval'.")
     
 
