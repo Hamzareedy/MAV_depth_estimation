@@ -1,5 +1,7 @@
 numpy
 tqdm
+pillow
 opencv
 torch
 torchvision
+tensorboard
