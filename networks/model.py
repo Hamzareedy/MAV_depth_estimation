@@ -2,6 +2,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import config
 
 
 def conv(in_channels, out_channels, kernel_size):
@@ -30,12 +31,12 @@ class MobileNetBlock(nn.Module):
     
 class Encoder(nn.Module):
     '''
-        Input: 4 * H * W (4 = rgb + depth)
-        Output: 512 * H/4 * W/4
+        Input: N * 4 * H * W (4 = rgb + depth)
+        Output: N * 512 * H/4 * W/4
     '''
     def __init__(self):
         super(Encoder, self).__init__()
-        self.in_channels = 4
+        self.in_channels = config.config["input_channels"]
         self.conv1 = MobileNetBlock(self.in_channels, 32)
         self.conv2 = MobileNetBlock(32, 64)
         self.conv3 = MobileNetBlock(64, 128)
@@ -55,11 +56,11 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
     '''
         Input: 5 layers of features from Encoder
-        Output: 1 (depth) * H * W
+        Output: N * 1 (depth) * H * W
     '''
     def __init__(self):
         super(Decoder, self).__init__()
-        self.out_channels = 1
+        self.out_channels = config.config["output_channels"]
         self.upconv1 = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2)
         self.conv1 = MobileNetBlock(512, 256)
         
@@ -95,6 +96,9 @@ class Decoder(nn.Module):
         
         
 class DepthModel(nn.Module):
+    '''
+        DepthModel: Encoder + Decoder (with bottleneck)
+    '''
     def __init__(self):
         super(DepthModel, self).__init__()
         self.encoder = Encoder()
