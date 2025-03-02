@@ -10,7 +10,7 @@ config = {
     "learning_rate": 0.001,
     "weight_decay": 0.0001,
     "num_workers": 4,
-    "ssim_weight": 0.8
+    "ssim_weight": 0.8,
     
     # Model configurations
     "input_channels": 4,
