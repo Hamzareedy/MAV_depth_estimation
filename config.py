@@ -20,6 +20,8 @@ config = {
     "train_data_path": "data/train",
     # "val_data_path": "data/val",
     "test_data_path": "data/test",
+    'image_path': 'data/original_image',
+    'depth_path': 'data/depth_map',
     
     # Model paths
     "save_model_path": "models",
