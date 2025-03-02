@@ -1,6 +1,8 @@
 import os
 import time
 import logging
+import argparse
+import config
 
 
 def parse_args():
@@ -17,6 +19,7 @@ def parse_args():
 def init_logger():
     logger = logging.getLogger(__name__)
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logger.info("Running on device: {}".format(config.config["device"]))
     
     # Stream handler for console output
     stream_handler = logging.StreamHandler()
