@@ -2,6 +2,7 @@ import os
 import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 import config, utils, model, dataset
 
 def train():
@@ -20,7 +21,8 @@ def train():
     
     # Loss function & optimizer
     weight = config.config["ssim_weight"]
-    loss = lambda x, y: weight * (1 - nn.SSIM()(x, y)) + (1 - weight) * nn.MSELoss()(x, y)
+    # loss = lambda x, y: weight * (1 - nn.SSIM()(x, y)) + (1 - weight) * nn.MSELoss()(x, y)
+    loss = nn.MSELoss()
     
     optimizer = torch.optim.Adam(
         depth_model.parameters(), 
@@ -28,12 +30,12 @@ def train():
         weight_decay=config.config["weight_decay"]
         )
     
-    writer = SummaryWriter("logs")
+    # writer = SummaryWriter("logs")
     best_loss = float("inf")
     counter = 0
     for epoch in range(config.config["epochs"]):
         # Training loop
-        for i, (img, depth) in enumerate(train_loader):
+        for i, (img, depth) in tqdm(enumerate(train_loader)):
             img, depth = img.to(device), depth.to(device)
             rgbd = torch.cat([img, depth], dim=1)
             
@@ -46,7 +48,7 @@ def train():
             
             if i % 10 == 0:
                 logger.info(f"Epoch {epoch}, Iteration {i}, Loss: {loss_val.item()}")
-                writer.add_scalar("Loss/train", loss_val.item(), epoch * len(train_loader) + i)
+                # writer.add_scalar("Loss/train", loss_val.item(), epoch * len(train_loader) + i)
         
         torch.save(depth_model.state_dict(), os.path.join(config.config["save_model_path"], f"model_{epoch}.pth"))
         
@@ -73,7 +75,7 @@ def train():
                     logger.info(f"Early stopping at epoch {epoch}.")
                     break
     logger.info("Training complete.")
-    writer.close()
+    # writer.close()
     
     
 if __name__ == "__main__":

@@ -22,8 +22,8 @@ def parse_args():
 
 def init_logger():
     logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    logger.info("Running on device: {}".format(config.config["device"]))
     
     # Stream handler for console output
     stream_handler = logging.StreamHandler()
@@ -35,6 +35,9 @@ def init_logger():
     file_handler = logging.FileHandler(os.path.join(config.config["save_log_path"], f"log_{current_time}.log"))
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+    
+    # log device info
+    logger.info("Running on device: {}".format(config.config["device"]))
     
     return logger
 
