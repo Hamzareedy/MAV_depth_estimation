@@ -2,6 +2,12 @@
 
 ## Usage
 
+### Environment setting
+
+Run the following command to install all the required libraries.
+
+`pip install -r requirements.txt`
+
 ### Command-Line Arguments
 
 The code accepts the following command-line arguments:
@@ -27,7 +33,7 @@ To evaluate the model, use the following command:
 
 `python main.py --mode eval --checkpoint path/to/checkpoint.pth`
 
-3. Load Comparison
+3. Simple test by loading image & depth map comparison
 
 To simply load a random pair of image and depth map for comparison, use the following command:
 
@@ -37,7 +43,11 @@ To simply load a random pair of image and depth map for comparison, use the foll
 
 The TODO.txt in the folders are just for getting the empty directory to be tracked. If you have added something inside the empty folder, just delete it. 
 
-TODO: Add custom SSIM loss function
+**TODO:**
+1. **Add custom SSIM loss function**
+2. **Data augmentation** -> focus on random clip & rotation, etc
+3. **Use out-of-scene data for regularion** -> To improve model's generalization ability
+
 
 ## Dataset 
 
