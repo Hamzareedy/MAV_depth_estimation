@@ -31,7 +31,7 @@ def init_logger():
     logger.addHandler(stream_handler)
     
     # File handler for file output
-    current_time = time.strftime("%Y-%m-%d_%H-%M", time.localtime).to_string()
+    current_time = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
     file_handler = logging.FileHandler(os.path.join(config.config["save_log_path"], f"log_{current_time}.log"))
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
@@ -68,7 +68,6 @@ def rename_files(path):
         os.rename(os.path.join(path, file), os.path.join(output_path, f"image_{i:05d}.jpg"))
         print(f"Rename {file} to image_{i:05d}.jpg")
      
-     
 
 def load_comparison():
     '''
@@ -81,7 +80,7 @@ def load_comparison():
     img = Image.open(os.path.join(img_data_folder, f"image_{idx:05d}.jpg"))
     depth = Image.open(os.path.join(depth_data_folder, f"image_{idx:05d}.jpg"))
     
-    # Rotate the image and depth map inversely by 90 degrees
+    # Rotate the image and depth map by 90 degrees
     img_rotated = img.rotate(90, expand=True)
     depth_rotated = depth.rotate(90, expand=True)
     

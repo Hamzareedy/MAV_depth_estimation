@@ -5,10 +5,13 @@ import torch.nn.functional as F
 import config
 
 
-def conv(in_channels, out_channels, kernel_size):
+def conv(in_channels, out_channels, kernel_size, stride=1):
+    '''
+        Convolutional layer with batch normalization and ReLU activation
+    '''
     padding = (kernel_size - 1) // 2 # Ensure the same output size as input size
     return nn.Sequential(
-        nn.Conv2d(in_channels, out_channels, kernel_size, padding=padding, stride=1),
+        nn.Conv2d(in_channels, out_channels, kernel_size, padding=padding, stride=stride),
         nn.BatchNorm2d(out_channels),
         nn.ReLU(inplace=True)
     )
@@ -18,10 +21,10 @@ class MobileNetBlock(nn.Module):
     '''
         Adapt from MobileNet
     '''
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, stride=1):
         super(MobileNetBlock, self).__init__()
-        self.depthwise = conv(in_channels, in_channels, 3) # Capturing spatial information
-        self.pointwise = conv(in_channels, out_channels, 1) # Increasing the depth
+        self.depthwise = conv(in_channels, in_channels, 3, stride) # Capturing spatial information
+        self.pointwise = conv(in_channels, out_channels, 1, stride) # Increasing the depth
         
     def forward(self, x):
         x = self.depthwise(x)
@@ -50,6 +53,8 @@ class Encoder(nn.Module):
         x3 = self.conv3(x2)
         x4 = self.conv4(x3)
         x5 = self.conv5(x4)
+        # print(x1.shape, x2.shape, x3.shape, x4.shape, x5.shape)
+        # torch.Size([4, 32, 520, 240]) torch.Size([4, 64, 520, 240]) torch.Size([4, 128, 520, 240]) torch.Size([4, 256, 520, 240]) torch.Size([4, 512, 520, 240])
         return x1, x2, x3, x4, x5
      
     
@@ -61,37 +66,18 @@ class Decoder(nn.Module):
     def __init__(self):
         super(Decoder, self).__init__()
         self.out_channels = config.config["output_channels"]
-        self.upconv1 = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2)
+        
         self.conv1 = MobileNetBlock(512, 256)
-        
-        self.upconv2 = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)
         self.conv2 = MobileNetBlock(256, 128)
-        
-        self.upconv3 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)
         self.conv3 = MobileNetBlock(128, 64)
-        
-        self.upconv4 = nn.ConvTranspose2d(64, 32, kernel_size=2, stride=2)
         self.conv4 = MobileNetBlock(64, 32)
-        
         self.conv5 = MobileNetBlock(32, self.out_channels) # Output depth only
         
     def forward(self, x1, x2, x3, x4, x5):
-        x = self.upconv1(x5)
-        x = torch.cat([x, x4], dim=1)
-        x = self.conv1(x)
-        
-        x = self.upconv2(x)
-        x = torch.cat([x, x3], dim=1)
-        x = self.conv2(x)
-        
-        x = self.upconv3(x)
-        x = torch.cat([x, x2], dim=1)
-        x = self.conv3(x)
-        
-        x = self.upconv4(x)
-        x = torch.cat([x, x1], dim=1)
-        x = self.conv4(x)
-        
+        x = self.conv1(x5)
+        x = self.conv2(x) + x3
+        x = self.conv3(x) + x2
+        x = self.conv4(x) + x1
         return self.conv5(x)
         
         
