@@ -30,7 +30,7 @@ def train():
         weight_decay=config.config["weight_decay"]
         )
     
-    # writer = SummaryWriter("logs")
+    writer = SummaryWriter(config.config["save_event_path"])
     best_loss = float("inf")
     counter = 0
     for epoch in range(config.config["epochs"]):
@@ -48,7 +48,7 @@ def train():
             
             if i % 10 == 0:
                 logger.info(f"Epoch {epoch}, Iteration {i}, Loss: {loss_val.item()}")
-                # writer.add_scalar("Loss/train", loss_val.item(), epoch * len(train_loader) + i)
+                writer.add_scalar("Loss/train", loss_val.item(), epoch * len(train_loader) + i)
         
         torch.save(depth_model.state_dict(), os.path.join(config.config["save_model_path"], f"model_{epoch}.pth"))
         
@@ -75,7 +75,7 @@ def train():
                     logger.info(f"Early stopping at epoch {epoch}.")
                     break
     logger.info("Training complete.")
-    # writer.close()
+    writer.close()
     
     
 if __name__ == "__main__":

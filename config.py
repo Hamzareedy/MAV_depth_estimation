@@ -22,5 +22,6 @@ config = {
     
     # Model paths
     "save_model_path": "models",
-    "save_log_path": "logs",
+    "save_log_path": "logs/logger",
+    "save_event_path": "logs/events",
 }

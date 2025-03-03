@@ -37,6 +37,8 @@ To simply load a random pair of image and depth map for comparison, use the foll
 
 The TODO.txt in the folders are just for getting the empty directory to be tracked. If you have added something inside the empty folder, just delete it. 
 
+TODO: Add custom SSIM loss function
+
 ## Dataset 
 
 Using the [DepthAnything](https://github.com/LiheYoung/Depth-Anything?tab=readme-ov-file) Model, we successfully generated training data pair as <original_image, depth_map>, as illustrated below.
@@ -59,4 +61,4 @@ These're the modificaitons I have made to adjust our tasks:
 
 2. Ignore the 5-layer Joint encoder and decoder since I don't know how exactly the 5 layers are connected and that may even double the model size. Given our limited cpu and memory, I opt to use a 2-layer connection.
 
-3. For every layer representively in encoder and decoder, I implemented residual cnnection to aid in construction.
+3. For the last three layer representively in encoder and decoder, I directly implemented residual cnnection to aid in construction without using the upscale algorithm talked in the paper.
