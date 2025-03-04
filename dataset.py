@@ -23,7 +23,9 @@ class DepthDataset(Dataset):
         return img, depth
         
     def __len__(self):
-        return len(os.listdir(self.image_path))
+        # There's a hidden file called ".DS_store" (some mac thing) which means this method counts 1 too many images
+        # if you don't do -1
+        return len(os.listdir(self.image_path)) - 1
     
     
 def load_image(path, mode = "RGB"):
