@@ -6,3 +6,4 @@ torchvision
 tensorboard
 h5py
 matplotlib
+onnx
