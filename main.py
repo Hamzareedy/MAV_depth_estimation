@@ -8,7 +8,9 @@ import time
 
 def train():
     # Set up logging & device
-    logger = utils.init_logger()
+    logging_on = config.config["logging_on"]
+    if logging_on:
+        logger = utils.init_logger()
     device = config.config["device"]
     
     # Load dataset
@@ -31,7 +33,8 @@ def train():
         weight_decay=config.config["weight_decay"]
         )
     
-    writer = SummaryWriter(config.config["save_event_path"])
+    if logging_on:
+        writer = SummaryWriter(config.config["save_event_path"])
     best_loss = float("inf")
     counter = 0
     for epoch in range(config.config["epochs"]):
@@ -48,7 +51,7 @@ def train():
             loss_val.backward()
             optimizer.step()
             
-            if i % 10 == 0:
+            if i % 10 == 0 & logging_on:
                 logger.info(f"Epoch {epoch}, Iteration {i}, Loss: {loss_val.item()}")
                 writer.add_scalar("Loss/train", loss_val.item(), epoch * len(train_loader) + i)
         
@@ -63,7 +66,7 @@ def train():
             pred_depth = depth_model(rgbd)
             loss_val = loss(pred_depth, depth)
             
-            if i % 10 == 0:
+            if i % 10 == 0 & logging_on:
                 logger.info(f"Epoch {epoch}, Iteration {i}, Val Loss: {loss_val.item()}")
                 writer.add_scalar("Loss/val", loss_val.item(), epoch * len(val_loader) + i)
             
@@ -74,10 +77,11 @@ def train():
             else:
                 counter += 1
                 if counter > 5:
-                    logger.info(f"Early stopping at epoch {epoch}.")
+                    if logging_on: logger.info(f"Early stopping at epoch {epoch}.")
                     break
-    logger.info("Training complete.")
-    writer.close()
+    if logging_on:
+        logger.info("Training complete.")
+        writer.close()
 
 def eval(num_imgs, model_id=0):
     '''

@@ -21,6 +21,7 @@ config = {
     'depth_path': 'data/depth_map',
     
     # Model paths
+    "logging_on": True,
     "save_model_path": "models",
     "save_log_path": "logs",
     "save_event_path": "logs/events",
