@@ -109,7 +109,7 @@ def show_eval_images(depth_pred, img, depth_gt, img_idx):
     depth_pred_rotated = np.rot90(depth_pred, k=1)
     depth_gt_rotated = np.rot90(depth_gt, k=1)
 
-    plt.figure(figsize=(10, 5))
+    plt.figure()
     plt.subplot(3, 1, 1)
     plt.imshow(img_rotated)
     plt.title(f"Original image {img_idx}")

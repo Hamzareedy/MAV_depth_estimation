@@ -5,6 +5,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import config, utils, model, dataset
 import time
+from torch.quantization import quantize_dynamic
 
 def train():
     # Set up logging & device
@@ -37,6 +38,7 @@ def train():
     for epoch in range(config.config["epochs"]):
         # Training loop
         for i, (img, depth) in tqdm(enumerate(train_loader)):
+            if i > 230: break
             img, depth = img.to(device), depth.to(device)
             rgbd = torch.cat([img, depth], dim=1)
             
@@ -89,6 +91,10 @@ def eval(num_imgs, model_id=0):
     depth_model = model.DepthModel()
     depth_model.load_state_dict(torch.load(model_path))
     depth_model.eval()
+    # depth_model = quantize_dynamic(depth_model, dtype=torch.qint8)
+ 
+    total_params = sum(p.numel() for p in depth_model.parameters())
+    print(f"Number of parameters: {total_params}")
 
     # Load images
     eval_loader = dataset.load_eval_dataset(num_imgs)
