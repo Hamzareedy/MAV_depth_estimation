@@ -6,6 +6,7 @@ from PIL import Image
 from torchvision import transforms as T
 from torch.utils.data import Dataset, DataLoader
 import config
+import random
 
 
 class DepthDataset(Dataset):
@@ -23,7 +24,9 @@ class DepthDataset(Dataset):
         return img, depth
         
     def __len__(self):
-        return len(os.listdir(self.image_path))
+        # There's a hidden file called ".DS_store" (some mac thing) which means this method counts 1 too many images
+        # if you don't do -1
+        return len(os.listdir(self.image_path)) - 1
     
     
 def load_image(path, mode = "RGB"):
@@ -54,3 +57,20 @@ def load_train_val_dataset():
         num_workers=config.config["num_workers"]
         )
     return train_dataloader, val_dataloader
+
+def load_eval_dataset(num_imgs):
+    '''
+        Load num_imgs number of images for evaluation
+    '''
+    dataset = DepthDataset()
+    random_indices = random.sample(range(len(dataset)), num_imgs)
+    eval_dataset = torch.utils.data.Subset(dataset, random_indices)
+
+    eval_data_loader = DataLoader(
+        eval_dataset,
+        batch_size=1,
+        shuffle=False,
+        num_workers=config.config["num_workers"]
+        )
+    
+    return eval_data_loader

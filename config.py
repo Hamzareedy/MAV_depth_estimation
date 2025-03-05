@@ -13,7 +13,7 @@ config = {
     "ssim_weight": 0.8,
     
     # Model configurations
-    "input_channels": 4,
+    "input_channels": 3, # TODO: Changed from 4, since I went from rgbd input to rgb. If this is wrong, please put back to 4
     "output_channels": 1,
     
     # Data 
@@ -22,6 +22,6 @@ config = {
     
     # Model paths
     "save_model_path": "models",
-    "save_log_path": "logs/logger",
+    "save_log_path": "logs",
     "save_event_path": "logs/events",
 }

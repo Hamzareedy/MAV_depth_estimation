@@ -7,6 +7,7 @@ import random
 from PIL import Image
 from matplotlib import pyplot as plt
 import config
+import numpy as np
 
 
 def parse_args():
@@ -99,4 +100,28 @@ def load_comparison():
     plt.axis("off")
     plt.show()
     
+def show_eval_images(depth_pred, img, depth_gt, img_idx):
+    '''
+        Display the input image, ground truth and predicted depth maps
+    '''
+    img = np.transpose(img, (1, 2, 0))
+    img_rotated = np.rot90(img, k=1)
+    depth_pred_rotated = np.rot90(depth_pred, k=1)
+    depth_gt_rotated = np.rot90(depth_gt, k=1)
+
+    plt.figure(figsize=(10, 5))
+    plt.subplot(3, 1, 1)
+    plt.imshow(img_rotated)
+    plt.title(f"Original image {img_idx}")
+    plt.axis("off")
     
+    plt.subplot(3, 1, 2)
+    plt.imshow(depth_gt_rotated, cmap="gray")
+    plt.title(f"Depth ground truth {img_idx}")
+    plt.axis("off")
+
+    plt.subplot(3, 1, 3)
+    plt.imshow(depth_pred_rotated, cmap="gray")
+    plt.title(f"Predicted depth map {img_idx}")
+    plt.axis("off")
+    plt.show()

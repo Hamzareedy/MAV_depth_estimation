@@ -4,6 +4,7 @@ import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import config, utils, model, dataset
+import time
 
 def train():
     # Set up logging & device
@@ -41,7 +42,8 @@ def train():
             
             optimizer.zero_grad()
             
-            pred_depth = depth_model(rgbd)
+            # pred_depth = depth_model(rgbd)
+            pred_depth = depth_model(img) # I don't understand why the depth is concatenated to the input, made it rgb for now
             loss_val = loss(pred_depth, depth)
             loss_val.backward()
             optimizer.step()
@@ -76,17 +78,44 @@ def train():
                     break
     logger.info("Training complete.")
     writer.close()
-    
+
+def eval(num_imgs, model_id=0):
+    '''
+    Pick some random input images and run depth estimation on it
+    '''
+    # Load model
+    model_path = config.config["save_model_path"] + f"/model_{model_id}.pth"
+
+    depth_model = model.DepthModel()
+    depth_model.load_state_dict(torch.load(model_path))
+    depth_model.eval()
+
+    # Load images
+    eval_loader = dataset.load_eval_dataset(num_imgs)
+
+    # Run depth estimation
+    with torch.no_grad():
+        for i, (img, depth_gt) in enumerate(eval_loader):
+            # Run model
+            start_time = time.time()
+            depth_pred = depth_model(img)[0]
+            
+            print(f"Inference time: {time.time() - start_time:.2f} seconds")
+
+            # Go from tensors to numpy arrays
+            depth_pred = depth_pred.squeeze().cpu().numpy()
+            img = img.squeeze().cpu().numpy()
+            depth_gt = depth_gt.squeeze().cpu().numpy()
+
+            # Display images
+            utils.show_eval_images(depth_pred, img, depth_gt, i)
     
 if __name__ == "__main__":
     args = utils.parse_args()
     if args.mode == "train":
         train()
     elif args.mode == "eval":
-        pass
+        eval(num_imgs=1, model_id=0)
     else:
         utils.load_comparison()
         # raise ValueError("Invalid mode. Please choose 'train' or 'eval'.")
-    
-
-
