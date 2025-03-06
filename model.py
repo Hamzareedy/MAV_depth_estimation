@@ -13,7 +13,7 @@ def conv(in_channels, out_channels, kernel_size, stride=1):
     return nn.Sequential(
         nn.Conv2d(in_channels, out_channels, kernel_size, padding=padding, stride=stride),
         nn.BatchNorm2d(out_channels),
-        nn.ReLU(inplace=True)
+        nn.Sigmoid()
     )
     
 
