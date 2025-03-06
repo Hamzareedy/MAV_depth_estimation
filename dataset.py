@@ -13,12 +13,14 @@ class DepthDataset(Dataset):
     def __init__(self):
         self.image_path = config.config["image_path"]
         self.depth_path = config.config["depth_path"]
+        self.image_mode = config.config["image_mode"]
+        self.in_type_uint8 = config.config["input_type_uint8"]
         
     def __getitem__(self, idx):
         img_path = os.path.join(self.image_path, f"image_{idx:05d}.jpg")
         depth_path = os.path.join(self.depth_path, f"image_{idx:05d}.jpg")
         
-        img = load_image(img_path) # 3 * H * W
+        img = load_image(img_path, mode=self.image_mode, use_uint8=self.in_type_uint8) # 3 * H * W (rgb) or 1 * H * W (grayscale)
         depth = load_image(depth_path, mode="L") # 1 * H * W, convert to grayscale maps
         
         return img, depth
@@ -29,11 +31,12 @@ class DepthDataset(Dataset):
         return len(os.listdir(self.image_path)) - 1
     
     
-def load_image(path, mode = "RGB"):
+def load_image(path, mode = "RGB", use_uint8=False):
     '''
         Load image from path and convert to tensor
     '''
     img = Image.open(path).convert(mode)
+    if use_uint8: return T.PILToTensor()(img)
     return T.ToTensor()(img)
 
 

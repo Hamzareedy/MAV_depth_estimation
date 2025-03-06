@@ -115,7 +115,7 @@ def eval(num_imgs, model_id=0):
             depth_gt = depth_gt.squeeze().cpu().numpy()
 
             # Display images
-            utils.show_eval_images(depth_pred, img, depth_gt, i)
+            utils.show_eval_images(depth_pred, img, depth_gt)
     
 if __name__ == "__main__":
     args = utils.parse_args()
