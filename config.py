@@ -13,7 +13,7 @@ config = {
     "ssim_weight": 0.8,
     
     # Model configurations
-    "input_channels": 3, # TODO: Changed from 4, since I went from rgbd input to rgb. If this is wrong, please put back to 4
+    "input_channels": 3, # Only use RGB as input
     "output_channels": 1,
     
     # Data 
@@ -21,7 +21,8 @@ config = {
     'depth_path': 'data/depth_map',
     
     # Model paths
+    "logging_on": True,
     "save_model_path": "models",
-    "save_log_path": "logs",
+    "save_log_path": "logs/logger",
     "save_event_path": "logs/events",
 }

@@ -44,9 +44,12 @@ To simply load a random pair of image and depth map for comparison, use the foll
 The TODO.txt in the folders are just for getting the empty directory to be tracked. If you have added something inside the empty folder, just delete it. 
 
 **TODO:**
-1. **Add custom SSIM loss function**
+
+0. **Downsample the original input**
+1. **Change the output layer to be vector instead of depth map / Add custom SSIM loss function**
 2. **Data augmentation** -> focus on random clip & rotation, etc
-3. **Use out-of-scene data for regularion** -> To improve model's generalization ability
+3.  **Compare between MobielNet v1 & MobielNet v3 to see if we can furthur improve the data**
+4. **Use out-of-scene data for regularion** -> To improve model's generalization ability
 
 
 ## Dataset 

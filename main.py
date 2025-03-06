@@ -9,7 +9,12 @@ from torch.quantization import quantize_dynamic
 
 def train():
     # Set up logging & device
-    logger = utils.init_logger()
+    logging_on = config.config["logging_on"]
+    if logging_on:
+        os.makedirs(config.config["save_log_path"], exist_ok=True)
+        logger = utils.init_logger()
+        os.makedirs(config.config["save_event_path"], exist_ok=True)
+        writer = SummaryWriter(config.config["save_event_path"])
     device = config.config["device"]
     
     # Load dataset
@@ -32,7 +37,6 @@ def train():
         weight_decay=config.config["weight_decay"]
         )
     
-    writer = SummaryWriter(config.config["save_event_path"])
     best_loss = float("inf")
     counter = 0
     for epoch in range(config.config["epochs"]):
@@ -40,17 +44,13 @@ def train():
         for i, (img, depth) in tqdm(enumerate(train_loader)):
             if i > 230: break
             img, depth = img.to(device), depth.to(device)
-            rgbd = torch.cat([img, depth], dim=1)
-            
             optimizer.zero_grad()
-            
-            # pred_depth = depth_model(rgbd)
-            pred_depth = depth_model(img) # I don't understand why the depth is concatenated to the input, made it rgb for now
+            pred_depth = depth_model(img) 
             loss_val = loss(pred_depth, depth)
             loss_val.backward()
             optimizer.step()
             
-            if i % 10 == 0:
+            if i % 10 == 0 and logging_on:
                 logger.info(f"Epoch {epoch}, Iteration {i}, Loss: {loss_val.item()}")
                 writer.add_scalar("Loss/train", loss_val.item(), epoch * len(train_loader) + i)
         
@@ -65,7 +65,7 @@ def train():
             pred_depth = depth_model(rgbd)
             loss_val = loss(pred_depth, depth)
             
-            if i % 10 == 0:
+            if i % 10 == 0 & logging_on:
                 logger.info(f"Epoch {epoch}, Iteration {i}, Val Loss: {loss_val.item()}")
                 writer.add_scalar("Loss/val", loss_val.item(), epoch * len(val_loader) + i)
             
@@ -76,10 +76,11 @@ def train():
             else:
                 counter += 1
                 if counter > 5:
-                    logger.info(f"Early stopping at epoch {epoch}.")
+                    if logging_on: logger.info(f"Early stopping at epoch {epoch}.")
                     break
-    logger.info("Training complete.")
-    writer.close()
+    if logging_on:
+        logger.info("Training complete.")
+        writer.close()
 
 def eval(num_imgs, model_id=0):
     '''

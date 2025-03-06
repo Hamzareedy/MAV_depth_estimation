@@ -38,7 +38,9 @@ def init_logger():
     logger.addHandler(file_handler)
     
     # log device info
-    logger.info("Running on device: {}".format(config.config["device"]))
+    for i, item in enumerate(config.config.items()):
+        if i == 8: break
+        logger.info(item.__str__())
     
     return logger
 
