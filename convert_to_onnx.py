@@ -4,6 +4,8 @@ import model
 from torch.quantization import quantize_dynamic
 
 def export_to_onnx(model_path, model_id, use_quantization=False):
+    config.config["device"] = "cpu" # Always set device to cpu for export, so you don't get errors
+
     depth_model = model.DepthModel()
     depth_model.load_state_dict(torch.load(model_path))
     depth_model.eval()
