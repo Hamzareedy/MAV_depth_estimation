@@ -40,6 +40,7 @@ class Encoder(nn.Module):
     def __init__(self):
         super(Encoder, self).__init__()
         self.in_channels = config.config["input_channels"]
+        self.in_type_uint8 = config.config["input_type_uint8"]
         self.conv1 = MobileNetBlock(self.in_channels, 32)
         self.conv2 = MobileNetBlock(32, 64)
         self.conv3 = MobileNetBlock(64, 128)
@@ -48,6 +49,9 @@ class Encoder(nn.Module):
         self.conv5 = MobileNetBlock(256, 512)
         
     def forward(self, x):
+        # Convert fo float for error "Input type (unsigned char) and bias type (float) should be the same".
+        # Might want to find a better way (quantization would possibly solve error altogether)
+        if self.in_type_uint8: x = x.float() / 255.0
         x1 = self.conv1(x)
         x2 = self.conv2(x1)
         x3 = self.conv3(x2)
