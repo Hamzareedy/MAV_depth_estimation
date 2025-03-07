@@ -4,6 +4,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import config
 
+class customReLU(nn.Module):
+    def forward(self, x):
+        return torch.max(x, torch.tensor(0.0, device=config.config["device"]))
 
 def conv(in_channels, out_channels, kernel_size, stride=1):
     '''
