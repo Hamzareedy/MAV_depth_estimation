@@ -20,8 +20,8 @@ config = {
     
     # Model configurations
     "image_mode": "L", # "RGB" or "L" (grayscale)
-    "input_channels": 1 if "image_mode" == "L" else 3,
-    "output_channels": 1,
+    "input_channels": 1, # 3 for RGB, 1 for grayscale
+    "output_channels": 520/8, # Output depth vector length
     "input_type_uint8": True,
 
     # Model paths
