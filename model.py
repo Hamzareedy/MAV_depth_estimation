@@ -21,10 +21,10 @@ class MobileNetBlock(nn.Module):
     '''
         Adapt from MobileNet
     '''
-    def __init__(self, in_channels, out_channels, stride=1):
+    def __init__(self, in_channels, out_channels, stride = 2):
         super(MobileNetBlock, self).__init__()
         self.depthwise = conv(in_channels, in_channels, 3, stride) # Capturing spatial information
-        self.pointwise = conv(in_channels, out_channels, 1, stride) # Increasing the depth
+        self.pointwise = conv(in_channels, out_channels, 1) # Increasing the depth
         
     def forward(self, x):
         x = self.depthwise(x)
@@ -32,84 +32,30 @@ class MobileNetBlock(nn.Module):
         return x
     
     
-class Encoder(nn.Module):
+
+class ShallowDepthModel(nn.Module):
     '''
-        Input: N * 4 * H * W (4 = rgb + depth)
-        Output: N * 512 * H/4 * W/4
+        Modified DepthModel with only Encoder to output the depth vector instead of depth map
+        Input: N * 3 * H * W (3 = rgb)
+        Output: N * W (depth vector of the center line)
     '''
     def __init__(self):
-        super(Encoder, self).__init__()
-        self.in_channels = config.config["input_channels"]
-        self.in_type_uint8 = config.config["input_type_uint8"]
-        self.conv1 = MobileNetBlock(self.in_channels, 32)
-        self.conv2 = MobileNetBlock(32, 64)
-        self.conv3 = MobileNetBlock(64, 128)
-        # The original paper suggests to use 5 layers, but we only use 128->256->512
-        self.conv4 = MobileNetBlock(128, 256)
-        self.conv5 = MobileNetBlock(256, 512)
+        super(ShallowDepthModel, self).__init__()
+        self.input_channels = config.config["input_channels"]
+        self.output_channels = config.config["output_channels"]
+        
+        self.encoder1 = MobileNetBlock(self.input_channels, 16)
+        self.encoder2 = MobileNetBlock(16, 32)
+        self.encoder3 = MobileNetBlock(32, 64)
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Linear(64, self.output_channels)
         
     def forward(self, x):
-        # Convert fo float for error "Input type (unsigned char) and bias type (float) should be the same".
-        # Might want to find a better way (quantization would possibly solve error altogether)
-        if self.in_type_uint8: x = x.float() / 255.0
-        x1 = self.conv1(x)
-        x2 = self.conv2(x1)
-        x3 = self.conv3(x2)
-        x4 = self.conv4(x3)
-        x5 = self.conv5(x4)
-        # print(x1.shape, x2.shape, x3.shape, x4.shape, x5.shape)
-        # torch.Size([4, 32, 520, 240]) torch.Size([4, 64, 520, 240]) torch.Size([4, 128, 520, 240]) torch.Size([4, 256, 520, 240]) torch.Size([4, 512, 520, 240])
-        return x1, x2, x3, x4, x5
-     
-    
-class Decoder(nn.Module):
-    '''
-        Input: 5 layers of features from Encoder
-        Output: N * 1 (depth) * H * W
-    '''
-    def __init__(self):
-        super(Decoder, self).__init__()
-        self.out_channels = config.config["output_channels"]
-        
-        self.conv1 = MobileNetBlock(512, 256)
-        self.conv2 = MobileNetBlock(256, 128)
-        self.conv3 = MobileNetBlock(128, 64)
-        self.conv4 = MobileNetBlock(64, 32)
-        self.conv5 = MobileNetBlock(32, self.out_channels) # Output depth only
-        
-    def forward(self, x1, x2, x3, x4, x5):
-        x = self.conv1(x5)
-        x = self.conv2(x) + x3
-        x = self.conv3(x) + x2
-        x = self.conv4(x) + x1
-        return self.conv5(x)
-        
-        
-class DepthModel(nn.Module):
-    '''
-        DepthModel: Encoder + Decoder (with bottleneck)
-    '''
-    def __init__(self):
-        super(DepthModel, self).__init__()
-        self.encoder = Encoder()
-        self.decoder = Decoder()
-        self.bottle_neck = nn.Conv2d(512, 512, kernel_size=1)
-        
-    def weight_init(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight)
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.ConvTranspose2d):
-                nn.init.kaiming_normal_(m.weight)
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
-            
-    def forward(self, x):
-        x1, x2, x3, x4, x5 = self.encoder(x)
-        x5 = self.bottle_neck(x5)
-        return self.decoder(x1, x2, x3, x4, x5)
+        # x: N * 3 * H * W
+        x = self.encoder1(x) # N * 16 * H/2 * W/2
+        x = self.encoder2(x) # N * 32 * H/4 * W/4
+        x = self.encoder3(x) # N * 64 * H/8 * W/8
+        x = self.pool(x) # N * 64 * 1 * 1
+        x = x.view(x.size(0), -1) # N * 64
+        x = self.fc(x) # N * W
+        return x
