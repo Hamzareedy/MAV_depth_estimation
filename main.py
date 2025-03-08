@@ -60,9 +60,8 @@ def train():
         depth_model.eval()
         for i, (img, depth) in enumerate(val_loader):
             img, depth = img.to(device), depth.to(device)
-            rgbd = torch.cat([img, depth], dim=1)
             
-            pred_depth = depth_model(rgbd)
+            pred_depth = depth_model(img)
             loss_val = loss(pred_depth, depth)
             
             if i % 10 == 0 & logging_on:
