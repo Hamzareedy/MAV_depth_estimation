@@ -1,9 +1,0 @@
-2025-03-07 18:17:39,144 - utils - INFO - ('device', 'cpu')
-2025-03-07 18:17:39,144 - utils - INFO - ('epochs', 1)
-2025-03-07 18:17:39,144 - utils - INFO - ('batch_size', 1)
-2025-03-07 18:17:39,144 - utils - INFO - ('train_val_split', 0.8)
-2025-03-07 18:17:39,144 - utils - INFO - ('learning_rate', 0.001)
-2025-03-07 18:17:39,144 - utils - INFO - ('weight_decay', 0.0001)
-2025-03-07 18:17:39,144 - utils - INFO - ('num_workers', 1)
-2025-03-07 18:17:39,144 - utils - INFO - ('ssim_weight', 0.8)
-2025-03-07 18:17:49,775 - utils - INFO - Epoch 0, Iteration 0, Loss: 0.7343218922615051

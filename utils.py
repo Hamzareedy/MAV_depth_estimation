@@ -102,6 +102,7 @@ def load_comparison():
     plt.axis("off")
     plt.show()
     
+    
 def show_eval_images(depth_pred, img, depth_gt):
     '''
         Display the input image, ground truth and predicted depth maps

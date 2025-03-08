@@ -21,14 +21,13 @@ def train():
     train_loader, val_loader = dataset.load_train_val_dataset()
     
     # Load model
-    depth_model = model.DepthModel()
+    depth_model = model.ShallowDepthModel()
     depth_model.to(device)
     if args.checkpoint:
         depth_model.load_state_dict(torch.load(args.checkpoint))
+    print(f"Number of parameters: {depth_model.compute_parameters()}")
     
     # Loss function & optimizer
-    weight = config.config["ssim_weight"]
-    # loss = lambda x, y: weight * (1 - nn.SSIM()(x, y)) + (1 - weight) * nn.MSELoss()(x, y)
     loss = nn.MSELoss()
     
     optimizer = torch.optim.Adam(
@@ -41,18 +40,20 @@ def train():
     counter = 0
     for epoch in range(config.config["epochs"]):
         # Training loop
-        for i, (img, depth) in tqdm(enumerate(train_loader)):
-            if i > 230: break
-            img, depth = img.to(device), depth.to(device)
+        for i, (img, depth_map) in tqdm(enumerate(train_loader)):
+            img, depth_map = img.to(device), depth_map.to(device)
+            depth_vector = dataset.extract_center_from_depthmap(depth_map)
+            
             optimizer.zero_grad()
             pred_depth = depth_model(img) 
-            loss_val = loss(pred_depth, depth)
-            loss_val.backward()
+            loss_train = loss(pred_depth, depth_vector)
+            # print(f"pred_depth: {pred_depth.shape}, depth_vector: {depth_vector.shape}")
+            loss_train.backward()
             optimizer.step()
             
             if i % 10 == 0 and logging_on:
-                logger.info(f"Epoch {epoch}, Iteration {i}, Loss: {loss_val.item()}")
-                writer.add_scalar("Loss/train", loss_val.item(), epoch * len(train_loader) + i)
+                logger.info(f"Epoch {epoch}, Iteration {i}, Loss: {loss_train.item()}")
+                writer.add_scalar("Loss/train", loss_train.item(), epoch * len(train_loader) + i)
         
         torch.save(depth_model.state_dict(), os.path.join(config.config["save_model_path"], f"model_{epoch}.pth"))
         
@@ -60,9 +61,10 @@ def train():
         depth_model.eval()
         for i, (img, depth) in enumerate(val_loader):
             img, depth = img.to(device), depth.to(device)
+            depth_vector = dataset.extract_center_from_depthmap(depth_map)
             
             pred_depth = depth_model(img)
-            loss_val = loss(pred_depth, depth)
+            loss_val = loss(pred_depth, depth_vector)
             
             if i % 10 == 0 & logging_on:
                 logger.info(f"Epoch {epoch}, Iteration {i}, Val Loss: {loss_val.item()}")
@@ -81,6 +83,7 @@ def train():
         logger.info("Training complete.")
         writer.close()
 
+
 def eval(num_imgs, model_id=0):
     '''
     Pick some random input images and run depth estimation on it
@@ -88,40 +91,35 @@ def eval(num_imgs, model_id=0):
     # Load model
     model_path = config.config["save_model_path"] + f"/model_{model_id}.pth"
 
-    depth_model = model.DepthModel()
+    depth_model = model.ShallowDepthModel()
     depth_model.load_state_dict(torch.load(model_path))
     depth_model.eval()
     # depth_model = quantize_dynamic(depth_model, dtype=torch.qint8)
  
-    total_params = sum(p.numel() for p in depth_model.parameters())
-    print(f"Number of parameters: {total_params}")
+    print(f"Number of parameters: {depth_model.compute_parameters()}")
 
     # Load images
     eval_loader = dataset.load_eval_dataset(num_imgs)
 
     # Run depth estimation
     with torch.no_grad():
-        for i, (img, depth_gt) in enumerate(eval_loader):
+        for i, (img, _) in enumerate(eval_loader):
             # Run model
             start_time = time.time()
-            depth_pred = depth_model(img)[0]
+            depth_pred = depth_model(img)
+            # print(f"Depth prediction: {depth_pred}")
+            max_depth, max_indices = torch.max(depth_pred, dim=1)
             
             print(f"Inference time: {time.time() - start_time:.2f} seconds")
+            print(f"Predicted depth & position: {max_depth}, {max_indices / config.config['output_channels']}")
 
-            # Go from tensors to numpy arrays
-            depth_pred = depth_pred.squeeze().cpu().numpy()
-            img = img.squeeze().cpu().numpy()
-            depth_gt = depth_gt.squeeze().cpu().numpy()
-
-            # Display images
-            utils.show_eval_images(depth_pred, img, depth_gt)
     
 if __name__ == "__main__":
     args = utils.parse_args()
     if args.mode == "train":
         train()
     elif args.mode == "eval":
-        eval(num_imgs=1, model_id=0)
+        eval(num_imgs=10, model_id=0)
     else:
         utils.load_comparison()
         # raise ValueError("Invalid mode. Please choose 'train' or 'eval'.")

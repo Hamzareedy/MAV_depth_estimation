@@ -26,7 +26,7 @@ class DepthDataset(Dataset):
         return img, depth
         
     def __len__(self):
-        # There's a hidden file called ".DS_store" (some mac thing) which means this method counts 1 too many images
+        # There's a hidden file called ".DS_store" (some mac thing) which means this method counts 1 more image
         # if you don't do -1
         return len(os.listdir(self.image_path)) - 1
     
@@ -38,6 +38,22 @@ def load_image(path, mode = "RGB", use_uint8=False):
     img = Image.open(path).convert(mode)
     if use_uint8: return T.PILToTensor()(img)
     return T.ToTensor()(img)
+
+
+def extract_center_from_depthmap(batch_depth_map):
+    '''
+        Extract the center line depth from the depth map
+        
+        ATTENTION: 
+        Since the depth map is always rotated by 90 degrees, the center line is actually the center column
+    '''
+    _, _, _, W = batch_depth_map.shape
+    center_depth = batch_depth_map[:, :, :, W//2] # N * 1 * H
+    # Interpolate the depth to H/8
+    downsampled_depth = F.avg_pool1d(center_depth, kernel_size=8, stride=8) # N * 1 * H/8
+    downsampled_depth = downsampled_depth.squeeze(1) # N * H/8x
+    # print(f"Extracted center depth shape: {downsampled_depth.shape}")
+    return downsampled_depth
 
 
 def load_train_val_dataset():
@@ -60,6 +76,7 @@ def load_train_val_dataset():
         num_workers=config.config["num_workers"]
         )
     return train_dataloader, val_dataloader
+
 
 def load_eval_dataset(num_imgs):
     '''
