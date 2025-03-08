@@ -12,15 +12,17 @@ config = {
     "num_workers": 1, # Number of CPU workers for data loading, small for test
     "ssim_weight": 0.8,
     
-    # Model configurations
-    "input_channels": 1, # Only use RGB as input
-    "output_channels": 1,
-    "input_type_uint8": True,
-    
     # Data 
     'image_path': 'data/original_image',
     'depth_path': 'data/depth_map',
+    'image_width': 520,
+    'image_height': 240,
+    
+    # Model configurations
     "image_mode": "L", # "RGB" or "L" (grayscale)
+    "input_channels": 1 if "image_mode" == "L" else 3,
+    "output_channels": 1,
+    "input_type_uint8": True,
 
     # Model paths
     "logging_on": True,
