@@ -4,13 +4,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 import config
 
+
 class customReLU(nn.Module):
     def forward(self, x):
         return torch.max(x, torch.tensor(0.0, device=config.config["device"]))
+    
 
 def conv(in_channels, out_channels, kernel_size, stride=1):
     '''
-        Convolutional layer with batch normalization and ReLU activation
+        Convolutional layer with batch normalization and custom ReLU activation (so that onnx can work)
     '''
     padding = (kernel_size - 1) // 2 # Ensure the same output size as input size
     return nn.Sequential(
@@ -22,7 +24,7 @@ def conv(in_channels, out_channels, kernel_size, stride=1):
 
 class MobileNetBlock(nn.Module):
     '''
-        Adapt from MobileNet
+        Adapt from MobileNet to save computational resources
     '''
     def __init__(self, in_channels, out_channels, stride = 2):
         super(MobileNetBlock, self).__init__()
@@ -33,7 +35,6 @@ class MobileNetBlock(nn.Module):
         x = self.depthwise(x)
         x = self.pointwise(x)
         return x
-    
     
 
 class ShallowDepthModel(nn.Module):
@@ -50,7 +51,7 @@ class ShallowDepthModel(nn.Module):
         self.encoder1 = MobileNetBlock(self.input_channels, 16)
         self.encoder2 = MobileNetBlock(16, 32)
         self.encoder3 = MobileNetBlock(32, 64)
-        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(64, self.output_channels)
         
     def forward(self, x):
@@ -60,5 +61,8 @@ class ShallowDepthModel(nn.Module):
         x = self.encoder3(x) # N * 64 * H/8 * W/8
         x = self.pool(x) # N * 64 * 1 * 1
         x = x.view(x.size(0), -1) # N * 64
-        x = self.fc(x) # N * W
+        x = self.fc(x) # N * (W/8)
         return x
+    
+    def compute_parameters(self):
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
