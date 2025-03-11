@@ -20,11 +20,11 @@ class DepthDataset(Dataset):
     def __getitem__(self, idx):
         img_path = os.path.join(self.image_path, f"image_{idx:05d}.jpg")
         
-        if config.config["image_format"] == "RGB":
+        if self.image_mode == "RGB" or self.image_mode == "L":
             img = load_image_tensor(img_path, mode=self.image_mode, use_uint8=self.in_type_uint8) # 3 * H * W (rgb) or 1 * H * W (grayscale)
-        elif config.config["image_format"] == "YUV":
-            img = load_image_array(img_path, mode=self.image_mode) 
-            img = rgb2yuv(img) # H * W * 3
+        elif self.image_mode == "YUV":
+            img = load_image_array(img_path) # H * W * 3 (rgb)
+            img = rgb2yuv(img) # H * W * 3 (yuv)
             img = T.ToTensor()(img).to(torch.float32) # 3 * H * W (yuv)
         
         depth_matrix = np.load(os.path.join(self.depth_path, f"array_{idx:05d}.npy"))
@@ -40,8 +40,8 @@ class DepthDataset(Dataset):
         return len(os.listdir(self.image_path)) - 1
     
     
-def load_image_array(path, mode = "RGB"):
-    img = Image.open(path).convert(mode)
+def load_image_array(path):
+    img = Image.open(path).convert("RGB")
     return np.array(img) # H * W * 3 (rgb) or H * W (grayscale)
 
     
