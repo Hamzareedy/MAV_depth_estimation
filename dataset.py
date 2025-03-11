@@ -24,6 +24,8 @@ class DepthDataset(Dataset):
         # depth = load_image(depth_path, mode="L") # 1 * H * W, convert to grayscale maps
         depth_matrix = np.load(os.path.join(self.depth_path, f"array_{idx:05d}.npy"))
         depth_vector = extract_center_from_depthmatrix(depth_matrix) # 1 * H
+        # Convert to float tensor
+        depth_vector = torch.tensor(depth_vector, dtype=torch.float32)
         
         return img, depth_vector
         

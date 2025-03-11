@@ -69,14 +69,14 @@ def train():
                 writer.add_scalar("Loss/val", loss_val.item(), epoch * len(val_loader) + i)
             
             # Early stopping
-            if loss_val < best_loss:
-                best_loss = loss_val
-                counter = 0
-            else:
-                counter += 1
-                if counter > 5:
-                    if logging_on: logger.info(f"Early stopping at epoch {epoch}.")
-                    break
+            # if loss_val < best_loss:
+            #     best_loss = loss_val
+            #     counter = 0
+            # else:
+            #     counter += 1
+            #     if counter > config.config["patience"]:
+            #         if logging_on: logger.info(f"Early stopping at epoch {epoch}.")
+            #         break
     if logging_on:
         logger.info("Training complete.")
         writer.close()
@@ -94,7 +94,7 @@ def eval(num_imgs, model_id=0):
     depth_model.eval()
     # depth_model = quantize_dynamic(depth_model, dtype=torch.qint8)
  
-    print(f"Number of parameters: {depth_model.compute_parameters()}")
+    # print(f"Number of parameters: {depth_model.compute_parameters()}")
 
     # Load images
     eval_loader = dataset.load_eval_dataset(num_imgs)
@@ -109,7 +109,7 @@ def eval(num_imgs, model_id=0):
             max_depth, max_indices = torch.max(depth_pred, dim=1)
             
             print(f"Inference time: {time.time() - start_time:.2f} seconds")
-            print(f"Predicted depth & position: {max_depth}, {max_indices / config.config['output_channels']}")
+            print(f"Predicted depth & index: {max_depth[0]}, {max_indices[0]}") #  / config.config['output_channels']
 
     
 if __name__ == "__main__":
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     elif args.mode == "train":
         train()
     elif args.mode == "eval":
-        eval(num_imgs=10, model_id=0)
+        eval(num_imgs=10, model_id=args.model_id)
     else:
         utils.load_comparison()
         # raise ValueError("Invalid mode. Please choose 'train' or 'eval'.")

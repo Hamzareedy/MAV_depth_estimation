@@ -18,6 +18,7 @@ def parse_args():
     parser.add_argument("--mode", type=str, default=None, help="Mode: data/train/eval")
     parser.add_argument("--path", type=str, default="data/depth_maps_cyberzoo_aggressive_flight_20190121-144646.h5", help="h5 file path")
     parser.add_argument("--checkpoint", type=str, default=None, help="Path to checkpoint file")
+    parser.add_argument("--model_id", type=int, default=0, help="Model ID for evaluation")
     args = parser.parse_args()
     return args
 
