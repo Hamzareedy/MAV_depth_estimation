@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -18,12 +19,13 @@ class DepthDataset(Dataset):
         
     def __getitem__(self, idx):
         img_path = os.path.join(self.image_path, f"image_{idx:05d}.jpg")
-        depth_path = os.path.join(self.depth_path, f"image_{idx:05d}.jpg")
         
         img = load_image(img_path, mode=self.image_mode, use_uint8=self.in_type_uint8) # 3 * H * W (rgb) or 1 * H * W (grayscale)
-        depth = load_image(depth_path, mode="L") # 1 * H * W, convert to grayscale maps
+        # depth = load_image(depth_path, mode="L") # 1 * H * W, convert to grayscale maps
+        depth_matrix = np.load(os.path.join(self.depth_path, f"array_{idx:05d}.npy"))
+        depth_vector = extract_center_from_depthmatrix(depth_matrix) # 1 * H
         
-        return img, depth
+        return img, depth_vector
         
     def __len__(self):
         # There's a hidden file called ".DS_store" (some mac thing) which means this method counts 1 more image
@@ -38,6 +40,12 @@ def load_image(path, mode = "RGB", use_uint8=False):
     img = Image.open(path).convert(mode)
     if use_uint8: return T.PILToTensor()(img)
     return T.ToTensor()(img)
+
+
+def extract_center_from_depthmatrix(depth_matrix):
+    H, W = depth_matrix.shape
+    center_depth = depth_matrix[:, W//2] # 1 * H
+    return center_depth
 
 
 def extract_center_from_depthmap(batch_depth_map):

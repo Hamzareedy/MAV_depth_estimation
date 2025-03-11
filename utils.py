@@ -15,7 +15,8 @@ def parse_args():
         Parse arguments from command line
     '''
     parser = argparse.ArgumentParser(description="Depth Estimation")
-    parser.add_argument("--mode", type=str, default=None, help="Mode: train/eval")
+    parser.add_argument("--mode", type=str, default=None, help="Mode: data/train/eval")
+    parser.add_argument("--path", type=str, default="data/depth_maps_cyberzoo_aggressive_flight_20190121-144646.h5", help="h5 file path")
     parser.add_argument("--checkpoint", type=str, default=None, help="Path to checkpoint file")
     args = parser.parse_args()
     return args
@@ -45,7 +46,26 @@ def init_logger():
     return logger
 
 
-def convert_h5_to_image(h5_path):
+def convert_h5_to_array(h5_path): 
+    '''
+        Load depth matrix from h5 file and store as numpy 
+    '''
+    output_path = os.path.join("data", "depth_matrix")
+    os.makedirs(output_path, exist_ok=True)
+    
+    with h5py.File(h5_path, "r") as f:
+        for i, key in enumerate(f.keys()):
+            # 520 * 240 array store the depth information
+            array = f[f[key].name][:]
+            # print(f"Array : {array}")
+            # print(f"Array shape: {array.shape}")
+            # break
+            array_path = os.path.join(output_path, f"array_{i:05d}.npy")
+            np.save(array_path, array)
+            print(f"Save {f[key].name} array to {array_path}")
+
+
+def convert_h5_to_image(h5_path): 
     '''
         Load image from h5 file and store in 
     '''

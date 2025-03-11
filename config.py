@@ -13,7 +13,7 @@ config = {
     
     # Data 
     'image_path': 'data/original_image',
-    'depth_path': 'data/depth_map',
+    'depth_path': 'data/depth_matrix',
     'image_width': 520,
     'image_height': 240,
     
