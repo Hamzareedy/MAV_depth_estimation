@@ -116,7 +116,7 @@ def load_eval_dataset(num_imgs):
     return eval_data_loader
 
 
-def rgb2yuv(im):
+def yuv2rgb(im):
     """ 
         Convert YUV to RGB 
         ref: https://github.com/guidoAI/YUV_notebook/blob/master/YUV_slices.py
