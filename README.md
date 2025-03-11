@@ -52,11 +52,9 @@ The TODO.txt in the folders are just for getting the empty directory to be track
 
 **TODO:**
 
-0. **Downsample the original input**
-1. **Change the output layer to be vector instead of depth map / Add custom SSIM loss function**
-2. **Data augmentation** -> focus on random clip & rotation, etc
-3.  **Compare between MobielNet v1 & MobielNet v3 to see if we can furthur improve the data**
-4. **Use out-of-scene data for regularion** -> To improve model's generalization ability
+1. **Data augmentation** -> focus on random clip & rotation, etc
+2.  **Compare between MobielNet v1 & MobielNet v3 to see if we can furthur improve the data**
+3. **Use out-of-scene data for regularion** -> To improve model's generalization ability
 
 
 ## Dataset 

@@ -15,13 +15,14 @@ config = {
     # Data 
     'image_path': 'data/original_image',
     'depth_path': 'data/depth_matrix',
+    'image_format': 'YUV',
     'image_width': 520,
     'image_height': 240,
     
     # Model configurations
-    "image_mode": "L", # "RGB" or "L" (grayscale)
+    "image_mode": "RGB", # "RGB" or "L" (grayscale)
     "input_type_uint8": False,
-    "input_channels": 1, # 3 for RGB, 1 for grayscale
+    "input_channels": 3, # 3 for RGB, 1 for grayscale
     "output_channels": 520, # Output depth vector length
 
     # Model paths
