@@ -56,6 +56,10 @@ The TODO.txt in the folders are just for getting the empty directory to be track
 2.  **Compare between MobielNet v1 & MobielNet v3 to see if we can furthur improve the data**
 3. **Use out-of-scene data for regularion** -> To improve model's generalization ability
 
+### Optimization
+
+1. decrease the input size
+2. just make it compatible with the flying speed -> 10fps is enough
 
 ## Dataset 
 
