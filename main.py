@@ -115,7 +115,8 @@ def eval(num_imgs, model_id=0):
 if __name__ == "__main__":
     args = utils.parse_args()
     if args.mode == "data":
-        utils.convert_h5_to_array(args.path)
+        h5_path = os.path.join(config.config["h5_path"], "ddata/h5/depth_maps_cyberzoo_aggressive_flight_20190121-144646.h5")
+        utils.convert_h5_to_array(h5_path)
     elif args.mode == "train":
         train()
     elif args.mode == "eval":

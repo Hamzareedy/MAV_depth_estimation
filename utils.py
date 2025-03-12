@@ -16,7 +16,6 @@ def parse_args():
     '''
     parser = argparse.ArgumentParser(description="Depth Estimation")
     parser.add_argument("--mode", type=str, default=None, help="Mode: data/train/eval")
-    parser.add_argument("--path", type=str, default="data/depth_maps_cyberzoo_aggressive_flight_20190121-144646.h5", help="h5 file path")
     parser.add_argument("--checkpoint", type=str, default=None, help="Path to checkpoint file")
     parser.add_argument("--model_id", type=int, default=0, help="Model ID for evaluation")
     args = parser.parse_args()
@@ -58,6 +57,7 @@ def convert_h5_to_array(h5_path):
         for i, key in enumerate(f.keys()):
             # 520 * 240 array store the depth information
             array = f[f[key].name][:]
+            array = array / 255.0
             # print(f"Array : {array}")
             # print(f"Array shape: {array.shape}")
             # break

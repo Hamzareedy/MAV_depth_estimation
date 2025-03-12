@@ -13,6 +13,7 @@ config = {
     "patience": 5, # Early stopping patience
     
     # Data 
+    'h5_path': 'data/h5',
     'image_path': 'data/original_image',
     'depth_path': 'data/depth_matrix',
     'image_width': 520,
