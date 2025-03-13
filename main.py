@@ -115,12 +115,13 @@ def eval(num_imgs, model_id=0):
 if __name__ == "__main__":
     args = utils.parse_args()
     if args.mode == "data":
-        h5_path = os.path.join(config.config["h5_path"], "ddata/h5/depth_maps_cyberzoo_aggressive_flight_20190121-144646.h5")
-        utils.convert_h5_to_array(h5_path)
+        h5_path = os.path.join(config.config["h5_path"], args.h5file) # flight_5_depthmap.h5
+        utils.data_preprocess(h5_path, config.config["raw_path"], append=args.add_data)
     elif args.mode == "train":
         train()
     elif args.mode == "eval":
         eval(num_imgs=10, model_id=args.model_id)
     else:
-        utils.load_comparison()
+        utils.depth_checker()
+        # utils.load_comparison()
         # raise ValueError("Invalid mode. Please choose 'train' or 'eval'.")
